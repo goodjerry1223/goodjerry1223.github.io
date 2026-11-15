@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VLA与RoboTwin仿真</title>
+  <style>
+:root {
+  color-scheme: light;
+  --paper: #fffefa;
+  --canvas: #f3f0e9;
+  --ink: #182432;
+  --muted: #657282;
+  --line: #e1e5e7;
+  --accent: #6c55c4;
+  --accent-soft: #f0ecff;
+  --accent-ink: #4e3c9e;
+  --code-bg: #17202c;
+  --code-ink: #edf3f7;
+  --shadow: 0 16px 56px rgba(27, 42, 58, .08);
+}
+body[data-theme="teal"] {
+  --accent: #087e83;
+  --accent-soft: #e5f5f1;
+  --accent-ink: #086c71;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--canvas);
+  font-family: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+  font-size: 17px;
+  line-height: 1.88;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  inset: 0 0 auto;
+  height: 430px;
+  background: radial-gradient(circle at 14% 10%, var(--accent-soft), transparent 45%),
+              linear-gradient(120deg, #faf8f4, #e9edf0);
+}
+a { color: var(--accent-ink); text-decoration-color: #b8b2df; text-underline-offset: 3px; }
+a:hover { color: var(--accent); }
+.site-header {
+  max-width: 1430px;
+  margin: 0 auto;
+  padding: 64px 44px 34px;
+}
+.back-link { display: inline-block; margin-bottom: 24px; color: var(--muted); font-size: 14px; font-weight: 650; text-decoration: none; }
+.back-link:hover { color: var(--accent); }
+.title-rule {
+  display: block;
+  width: 52px;
+  height: 5px;
+  margin-bottom: 26px;
+  border-radius: 99px;
+  background: var(--accent);
+}
+.site-header h1 {
+  max-width: 1000px;
+  margin: 0;
+  font-size: clamp(38px, 4.2vw, 68px);
+  font-weight: 800;
+  line-height: 1.22;
+  letter-spacing: -.035em;
+  overflow-wrap: anywhere;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(210px, 260px) minmax(0, 1fr);
+  align-items: start;
+  gap: 34px;
+  max-width: 1430px;
+  margin: 0 auto 90px;
+  padding: 0 44px;
+}
+.toc {
+  position: sticky;
+  top: 22px;
+  max-height: calc(100vh - 44px);
+  overflow-y: auto;
+  padding: 22px 4px 22px 0;
+  scrollbar-width: thin;
+}
+.toc-title {
+  margin: 0 0 14px 14px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .18em;
+}
+.toc a {
+  display: block;
+  padding: 7px 12px 7px 14px;
+  border-left: 2px solid transparent;
+  border-radius: 0 8px 8px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.toc a:hover, .toc a.active {
+  border-left-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.toc a.level-3 { padding-left: 27px; font-size: 12px; }
+.toc a.level-4 { padding-left: 40px; font-size: 12px; }
+.mobile-toc { display: none; }
+.paper {
+  min-width: 0;
+  padding: 48px clamp(24px, 5vw, 76px) 76px;
+  border: 1px solid #e8e9e5;
+  border-radius: 22px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+.article { max-width: 900px; margin: 0 auto; overflow-x: clip; }
+.article > :first-child { margin-top: 0; }
+.article h1, .article h2, .article h3, .article h4 {
+  line-height: 1.38;
+  letter-spacing: -.018em;
+  scroll-margin-top: 30px;
+  overflow-wrap: anywhere;
+}
+.article h1 {
+  margin: 72px 0 23px;
+  padding-top: 26px;
+  border-top: 2px solid var(--ink);
+  font-size: clamp(28px, 3vw, 40px);
+}
+.article h2 {
+  margin: 66px 0 22px;
+  padding: 0 0 15px;
+  border-bottom: 1px solid var(--line);
+  font-size: clamp(25px, 2.6vw, 34px);
+  font-weight: 780;
+}
+.article h2::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: .8em;
+  margin-right: 13px;
+  border-radius: 5px;
+  background: var(--accent);
+  vertical-align: -.03em;
+}
+.article h3 {
+  margin: 44px 0 14px;
+  color: var(--accent-ink);
+  font-size: clamp(21px, 2vw, 26px);
+}
+.article h4 { margin: 30px 0 12px; font-size: 19px; }
+.article p { margin: 15px 0 23px; overflow-wrap: anywhere; }
+.article strong { font-weight: 760; color: #122334; }
+.article ul, .article ol { margin: 10px 0 25px; padding-left: 1.6em; }
+.article li { padding-left: .25em; margin: 7px 0; }
+.article li::marker { color: var(--accent); font-weight: 700; }
+.article li > p { margin: 5px 0; }
+.article blockquote {
+  margin: 30px 0;
+  padding: 15px 24px;
+  border-left: 5px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  background: var(--accent-soft);
+  color: #364250;
+}
+.article blockquote > :first-child { margin-top: 0; }
+.article blockquote > :last-child { margin-bottom: 0; }
+.article hr { margin: 42px 0; border: 0; border-top: 1px solid var(--line); }
+.article :not(pre) > code {
+  padding: .13em .34em;
+  border: 1px solid #e7e8ee;
+  border-radius: 5px;
+  background: #f4f5f8;
+  color: #a14254;
+  font-family: "Cascadia Code", Consolas, "Noto Sans Mono CJK SC", monospace;
+  font-size: .89em;
+  overflow-wrap: anywhere;
+}
+.article pre {
+  max-width: 100%;
+  margin: 24px 0 30px;
+  padding: 23px 26px;
+  overflow-x: auto;
+  border: 1px solid #283445;
+  border-radius: 14px;
+  background: var(--code-bg);
+  color: var(--code-ink);
+  box-shadow: 0 9px 25px rgba(20, 31, 45, .1);
+  font-family: "Cascadia Code", Consolas, "Noto Sans Mono CJK SC", monospace;
+  font-size: 13.5px;
+  line-height: 1.75;
+  tab-size: 4;
+}
+.article pre code { color: inherit; font: inherit; white-space: pre; }
+.article figure {
+  margin: 30px 0 36px;
+  padding: clamp(12px, 2vw, 22px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 30px rgba(30, 42, 58, .045);
+}
+.article figure a { display: block; line-height: 0; }
+.article figure img { display: block; width: auto; max-width: 100%; height: auto; margin: auto; }
+.table-wrap { max-width: 100%; margin: 28px 0 36px; overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+.article table { width: 100%; min-width: 620px; border-collapse: collapse; font-size: 15px; line-height: 1.7; }
+.article th, .article td { padding: 15px 17px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); text-align: left; vertical-align: top; }
+.article th:last-child, .article td:last-child { border-right: 0; }
+.article tr:last-child td { border-bottom: 0; }
+.article th { background: var(--accent-soft); color: var(--accent-ink); font-weight: 750; }
+.article tbody tr:nth-child(even) { background: #fafbf9; }
+@media (max-width: 980px) {
+  .site-header { padding: 38px 20px 25px; }
+  .layout { display: block; padding: 0 14px; }
+  .toc { display: none; }
+  .mobile-toc {
+    display: block;
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--paper);
+  }
+  .mobile-toc summary { color: var(--accent-ink); font-weight: 750; cursor: pointer; }
+  .mobile-toc nav { max-height: 45vh; overflow-y: auto; margin-top: 10px; }
+  .mobile-toc a { display: block; padding: 5px 2px; color: var(--muted); font-size: 14px; text-decoration: none; }
+  .mobile-toc a.level-3 { padding-left: 16px; }
+  .mobile-toc a.level-4 { padding-left: 32px; }
+  .paper { padding: 30px 22px 48px; border-radius: 14px; }
+}
+@media (max-width: 560px) {
+  body { font-size: 15.5px; }
+  .site-header h1 { font-size: 37px; }
+  .paper { padding: 27px 17px 45px; }
+  .article pre { padding: 18px; font-size: 12px; }
+  .article h2 { margin-top: 53px; }
+  .article figure { padding: 8px; }
+}
+@media print {
+  body { background: white; font-size: 12pt; }
+  body::before, .toc, .mobile-toc { display: none !important; }
+  .site-header { padding: 0 0 24px; }
+  .layout { display: block; margin: 0; padding: 0; }
+  .paper { padding: 0; border: 0; box-shadow: none; }
+  .article figure, .article pre, .article table { break-inside: avoid; }
+  .article h1, .article h2, .article h3, .article h4 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+</style>
+</head>
+<body data-theme="teal">
+  <header class="site-header">
+    <a class="back-link" href="/#study-record">← 返回 Study Record</a>
+    <span class="title-rule" aria-hidden="true"></span>
+    <h1>VLA与RoboTwin仿真</h1>
+  </header>
+  <div class="layout">
+    <aside class="toc" aria-label="目录">
+      <p class="toc-title">CONTENTS</p>
+      <nav><a class="level-3" href="#section-01">模式一：qpos</a>
+<a class="level-3" href="#section-02">模式二：ee pose</a>
+<a class="level-1" href="#section-03">π₀.₅ 在 RoboTwin 中的动作执行与控制</a>
+<a class="level-3" href="#section-04">π₀.₅ 的 Action Chunk 如何交给 RoboTwin 执行？</a>
+<a class="level-3" href="#section-05">RoboTwin 如何将 Action 转换为关节力矩？</a>
+<a class="level-3" href="#section-06">RoboTwin 是否存在轨迹跟踪误差？</a>
+<a class="level-3" href="#section-07">RoboTwin 有没有考虑重力前馈？</a>
+<a class="level-3" href="#section-08">EE Pose 模式下，什么时候会发生 IK 或规划失败？</a>
+<a class="level-3" href="#section-09">仿真步长和“小 Action”如何定义？对轨迹有什么影响？</a>
+<a class="level-3" href="#section-10">RoboTwin 与 LIBERO 常见仿真平台</a>
+<a class="level-2" href="#section-11">1. 什么是轨迹跟踪误差</a>
+<a class="level-2" href="#section-12">2. 动力学补偿能消除多少误差</a>
+<a class="level-2" href="#section-13">3. VLA 的 action chunk</a>
+<a class="level-2" href="#section-14">4. 是否需要进一步处理 action chunk</a>
+<a class="level-2" href="#section-15">5. Ruckig、cuRobo 轨迹</a></nav>
+    </aside>
+    <div>
+      <details class="mobile-toc"><summary>目录</summary><nav><a class="level-3" href="#section-01">模式一：qpos</a>
+<a class="level-3" href="#section-02">模式二：ee pose</a>
+<a class="level-1" href="#section-03">π₀.₅ 在 RoboTwin 中的动作执行与控制</a>
+<a class="level-3" href="#section-04">π₀.₅ 的 Action Chunk 如何交给 RoboTwin 执行？</a>
+<a class="level-3" href="#section-05">RoboTwin 如何将 Action 转换为关节力矩？</a>
+<a class="level-3" href="#section-06">RoboTwin 是否存在轨迹跟踪误差？</a>
+<a class="level-3" href="#section-07">RoboTwin 有没有考虑重力前馈？</a>
+<a class="level-3" href="#section-08">EE Pose 模式下，什么时候会发生 IK 或规划失败？</a>
+<a class="level-3" href="#section-09">仿真步长和“小 Action”如何定义？对轨迹有什么影响？</a>
+<a class="level-3" href="#section-10">RoboTwin 与 LIBERO 常见仿真平台</a>
+<a class="level-2" href="#section-11">1. 什么是轨迹跟踪误差</a>
+<a class="level-2" href="#section-12">2. 动力学补偿能消除多少误差</a>
+<a class="level-2" href="#section-13">3. VLA 的 action chunk</a>
+<a class="level-2" href="#section-14">4. 是否需要进一步处理 action chunk</a>
+<a class="level-2" href="#section-15">5. Ruckig、cuRobo 轨迹</a></nav></details>
+      <main class="paper"><article class="article">
+<figure><a href="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image.png" rel="noopener" target="_blank"><img alt="image.png" decoding="async" loading="eager" src="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image.png"/></a></figure>
+<figure><a href="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image%201.png" rel="noopener" target="_blank"><img alt="image.png" decoding="async" loading="eager" src="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image%201.png"/></a></figure>
+<p>π₀.₅ 通过 Action Chunking 实现低频视觉推理和高频动作控制。模型推理时通常一次预测未来 50 步动作，Flow Matching 采用 10 次积分，完成后将整个动作序列交给仿真环境执行。</p>
+<p>在 RoboTwin 原生配置中，SAPIEN 物理仿真步长为 0.004s，对应 250Hz；默认每 15 个物理步采集一次示教数据，数据频率约为 16.67Hz。评估时每个 VLA 动作经 TOPP／规划后可能执行不同数量的物理步。50 个动作的仿真时长也就是仿真执行中VLA视觉输入的更新频率应为“各次 <code>take_action()</code> 实际 <code>scene.step()</code> 次数之和 × 0.004 s”</p>
+<figure><a href="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image%202.png" rel="noopener" target="_blank"><img alt="image.png" decoding="async" loading="eager" src="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image%202.png"/></a></figure>
+<h3 id="section-01">模式一：qpos</h3>
+<p>模型直接输出关节位置目标。</p>
+<pre><code class="language-Plain">VLA Policy
+   ↓
+Target qpos
+   ↓
+RoboTwin Joint Controller
+   ↓
+SAPIEN PD Drive
+   ↓
+PhysX Simulation
+</code></pre>
+<p><code>目标 qpos → 从当前目标状态构造路径 → MPlib TOPPRA 速度/加速度重新定时 → 250 Hz 位置和速度目标 → SAPIEN Drive</code></p>
+<p>官方动作格式为：</p>
+<pre><code class="language-Plain">action = [    left_arm_joints,    left_gripper,    right_arm_joints,    right_gripper,]
+</code></pre>
+<p>对于每侧具有六个机械臂关节、一个夹爪控制标量的配置，动作可以是 14 维：a ∈ ℝ^14</p>
+<h3 id="section-02">模式二：ee pose</h3>
+<p>模型输出末端绝对位姿与夹爪开合程度。</p>
+<pre><code class="language-Plain">VLA Policy
+   ↓
+Target EE Pose
+   ↓
+坐标系转换
+   ↓
+IK / Motion Planning
+   ↓
+Target qpos Trajectory
+   ↓
+SAPIEN PD Drive
+   ↓
+PhysX Simulation
+</code></pre>
+<ul>
+<li>
+<p>EE Pose：RoboTwin 定义的机械臂末端控制参考位姿。</p>
+</li>
+<li>
+<p>TCP Pose：夹爪中心（Gripper Center）的位姿，更接近实际抓取时关注的工具中心点。</p>
+</li>
+</ul>
+<h1 id="section-03">π₀.₅ 在 RoboTwin 中的动作执行与控制</h1>
+<h3 id="section-04">π₀.₅ 的 Action Chunk 如何交给 RoboTwin 执行？</h3>
+<p>π₀.₅ 一次推理输出一个 Action Chunk，例如 50×14，包含未来 50 步的双臂关节与夹爪动作。</p>
+<p>经过反归一化和动作格式转换后，逐步调用 RoboTwin 的 <code>take_action()</code>：</p>
+<ul>
+<li>
+<p>qpos 模式：直接提供目标关节位置。</p>
+</li>
+<li>
+<p>ee 模式：提供末端位置和姿态，通过 IK/运动规划转换为关节轨迹。</p>
+</li>
+</ul>
+<h3 id="section-05">RoboTwin 如何将 Action 转换为关节力矩？</h3>
+<p>RoboTwin 使用 SAPIEN/PhysX 的关节驱动器，基本控制机制为 PD 位置控制 + 动力学补偿。</p>
+<p>τ_PD = K_p(q_d - q) + K_d(q̇_d - q̇)</p>
+<p>其中 q_d 是目标关节角，q 是实际关节角。</p>
+<p>物理引擎将驱动力矩与重力、惯性、摩擦、接触力等共同纳入动力学求解，计算下一时刻的关节位置与速度。</p>
+<p>因此，Policy 输出的是控制目标，PhysX 才负责物理运动。</p>
+<h3 id="section-06">RoboTwin 是否存在轨迹跟踪误差？</h3>
+<p>存在。因为 PD 控制不保证实际位置完全等于目标位置。</p>
+<p>主要来源包括：</p>
+<ul>
+<li>
+<p>动态滞后：目标变化过快，机械臂无法立即跟随。</p>
+</li>
+<li>
+<p>控制器误差：刚度、阻尼及力矩限制使跟踪不完全。</p>
+</li>
+<li>
+<p>接触扰动：抓取、碰撞、插拔时外力改变机械臂运动。</p>
+</li>
+<li>
+<p>离散化误差：有限物理步长、求解器精度造成偏差。</p>
+</li>
+</ul>
+<p>可以定义：</p>
+<p>e_q(t) = q_d(t) - q(t)</p>
+<p>末端位置误差近似满足：</p>
+<p>Δx ≈ J(q)Δq</p>
+<h3 id="section-07">RoboTwin 有没有考虑重力前馈？</h3>
+<p>RoboTwin <code>envs/robot/robot.py</code> 中实现了：</p>
+<pre><code class="language-Plain">def _entity_qf(self, entity):
+    qf = entity.compute_passive_force(
+        gravity=True,
+        coriolis_and_centrifugal=True
+    )
+    entity.set_qf(qf)
+</code></pre>
+<p><code>set_arm_joints()</code> 会调用 <code>_entity_qf()</code>，再下发关节位置和速度目标。</p>
+<p>因此控制机制可以近似理解为：</p>
+<p>τ = τ_PD + τ_gravity + τ_coriolis</p>
+<p>即 PD + 重力补偿 + 科氏力/离心力补偿。</p>
+<h3 id="section-08">EE Pose 模式下，什么时候会发生 IK 或规划失败？</h3>
+<p>RoboTwin 的 EE 模式通过 CuRobo 等规划模块将末端位姿目标转换成关节运动。以下情况可能导致失败：</p>
+<p>IK 解决的是目标位姿有没有可行的关节解</p>
+<p>RoboTwin 源码中包含 CuRobo 路径规划和针对机器人末端坐标的转换，并且明确存在路径碰撞导致规划失败的情况。</p>
+<h3 id="section-09">仿真步长和“小 Action”如何定义？对轨迹有什么影响？</h3>
+<p>需要区分三个概念：</p>
+<p>例如，假设控制频率为 50 Hz：</p>
+<p>Δt_control = 0.02 s</p>
+<p>如果相邻两个关节位置命令相差 0.01 rad，相当于目标关节速度约为：</p>
+<p>q̇_d ≈ 0.01 / 0.02 = 0.5 rad/s</p>
+<p>因此</p>
+<ul>
+<li>
+<p>动作增量过大：相邻目标发生跳变，容易出现跟踪滞后、过冲和碰撞冲击。</p>
+</li>
+<li>
+<p>动作增量较小：目标轨迹通常更平滑，但并不自动保证准确，且需要更多控制步完成相同位移。</p>
+</li>
+<li>
+<p>Physics Step 过大：可能降低接触仿真的时间分辨率和求解稳定性。</p>
+</li>
+<li>
+<p>Physics Step 较小：一般有利于数值精度，但增加计算开销。</p>
+</li>
+</ul>
+<h3 id="section-10">RoboTwin 与 LIBERO 常见仿真平台</h3>
+<p>其中最重要的区别是 RoboTwin 与 LIBERO：</p>
+<ul>
+<li>
+<p>RoboTwin 的典型 qpos 模式：π₀.₅ 直接输出关节目标，由 PhysX Drive 跟踪。</p>
+</li>
+<li>
+<p>LIBERO 默认模式：Policy 输出末端位姿增量，由 OSC 根据末端位姿误差、Jacobian 和动力学模型计算关节力矩，不需要先对每个目标执行 IK。</p>
+</li>
+<li>
+<p>Isaac Lab：支持显式建模电机力矩限制、延迟等，更方便研究底层控制器和执行器误差。</p>
+</li>
+</ul>
+<p>LIBERO 官方默认控制频率为 20 Hz，控制器为 <code>OSC_POSE</code>。</p>
+<h2 id="section-11">1. 什么是轨迹跟踪误差</h2>
+<p>轨迹跟踪误差是在<strong>同一执行时刻</strong>比较控制器下发的参考轨迹与机器人实际状态：</p>
+<p>e_q(t) = q_ref(t) - q_actual(t)，e_q̇(t) = q̇_ref(t) - q̇_actual(t)</p>
+<p>任务更关心末端时，还应记录位置误差和姿态误差。文档中的 Δx ≈ J(q)Δq 是小误差附近的近似，适合解释关节误差如何传到末端。</p>
+<h2 id="section-12">2. 动力学补偿能消除多少误差</h2>
+<p>RoboTwin 在 <code>set_arm_joints()</code> 中计算重力、科氏力和离心力对应的被动力补偿，并通过 <code>set_qf()</code> 施加；随后设置关节位置和速度目标。SAPIEN 的 drive 依据刚度、阻尼追踪目标。</p>
+<p>补偿能消除的是<strong>模型所描述的那部分负载</strong>。理想静止、模型准确且未饱和时，重力前馈可以消除 PD 为平衡重力而产生的稳态偏差；运动中的惯性需求、接触力、模型误差、驱动饱和和离散控制仍会带来误差。</p>
+<h2 id="section-13">3. VLA 的 action chunk</h2>
+<p>在当前 RoboTwin <code>take_action()</code> 中：</p>
+<ul>
+<li>
+<p><strong><code>qpos</code>****：每次调用只接收一个目标。代码以当前 <em><strong><strong>drive target</strong></strong></em> 和该目标组成两点路径，分别对左右臂调用 MPlib <strong><strong><code>TOPP()</code></strong></strong>，再按 250 Hz 下发生成的位置、速度序列。MPlib 的这一路 TOPPRA 实现施加关节速度和加速度约束</strong>；未在此处施加 jerk、力矩或路径碰撞约束。TOPP 失败时，代码仍推进 50 个仿真步，并保留该侧先前的手臂驱动目标。</p>
+</li>
+<li>
+<p>**<code>ee</code>****：每个末端目标先经过抓取参考位姿到规划末端连杆的坐标变换，再调用规划器；**RoboTwin 的 cuRobo 路径取规划成功后的插值关节位置和速度执行。规划器可以检查其配置中的运动学与碰撞条件，但这仍不等于实机力矩和跟踪安全保证。</p>
+</li>
+</ul>
+<h2 id="section-14">4. 是否需要进一步处理 action chunk</h2>
+<p>把 VLA 输出视为<strong>目标序列</strong>，经过以下执行链：</p>
+<p>反归一化与单位/坐标系核对 → 有限值和关节/夹爪范围检查 → 按实际反馈状态接入首点 → 路径与双臂碰撞检查 → 时间参数化或轨迹优化 → 在控制周期上采样 → 速度/加速度/jerk/力矩与末端误差验证 → 执行并监测反馈</p>
+<p>对 <code>ee pose</code>，还要检查四元数归一化、姿态插值、IK 分支连续性、奇异位形及工具中心点与规划末端连杆的变换。对连续 chunk，要核对边界处的位置、速度、加速度连续性；</p>
+<h2 id="section-15">5. Ruckig、cuRobo 轨迹</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>实际机制</th>
+<th>能保证或检查的范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ruckig</strong></td>
+<td>从当前 q、q̇、q̈ 到目标状态在线生成轨迹，输入逐轴速度、加速度、jerk 上限，可同步多轴并按控制周期取样。</td>
+<td>对有效输入生成满足所设运动学限制的状态轨迹；Community 版的中间路点使用云端接口，位置限位和 Tracking 接口属于 Pro 功能。</td>
+</tr>
+<tr>
+<td><strong>cuRobo</strong></td>
+<td>通过轨迹优化惩罚加速度、jerk，并结合关节界限、碰撞代价、时间步优化和插值轨迹评估，选择成功轨迹。</td>
+<td>适合生成并评估配置约束下的关节路径；平滑代价与插值评估应查看实际参数和输出结果。RoboTwin 调用的是其规划结果。</td>
+</tr>
+<tr>
+<td><strong>RoboTwin qpos 路径中的 TOPPRA</strong></td>
+<td>沿两点关节路径按速度、加速度限制重新定时。</td>
+<td>当前这条调用没有 jerk 与力矩约束；它也没有把整个 VLA chunk 作为一条统一轨迹优化。</td>
+</tr>
+</tbody>
+</table></div>
+<p>关于 Ruckig 工具：</p>
+<p>Ruckig 是一款用于在线轨迹生成（OTG）的高效库。它的核心优势在于能够严格满足速度、加速度以及加加速度（Jerk）的物理上限约束。</p>
+<ul>
+<li>
+<p>在机制上：它接收当前的运动状态（q, q˙<em>q</em>˙, q¨<em>q</em>¨）和目标状态，能在极短的时间内实时计算出平滑的多轴同步轨迹。</p>
+</li>
+<li>
+<p>在 VLA 仿真链路中：它相当于“动作平滑器”。虽然 VLA 输出了连续的动作块，或 cuRobo 规划出了空间路径，但为了确保物理引擎（SAPIEN）中的电机不发生剧烈抖动或过载，底层往往会通过 Ruckig 对这些路径进行时间重采样（重定时），生成满足动力学限制的平滑轨迹。</p>
+</li>
+<li></li>
+</ul>
+</article></main>
+    </div>
+  </div>
+  <script>
+const links = [...document.querySelectorAll('.toc a')];
+const byId = new Map(links.map(a => [a.hash.slice(1), a]));
+const observer = new IntersectionObserver(entries => {
+  for (const entry of entries) {
+    if (!entry.isIntersecting) continue;
+    links.forEach(a => a.classList.remove('active'));
+    byId.get(entry.target.id)?.classList.add('active');
+  }
+}, { rootMargin: '-10% 0px -72% 0px' });
+document.querySelectorAll('.article h1[id], .article h2[id], .article h3[id], .article h4[id]').forEach(h => observer.observe(h));
+document.querySelectorAll('.mobile-toc a').forEach(a => a.addEventListener('click', () => {
+  document.querySelector('.mobile-toc').open = false;
+}));
+</script>
+</body>
+</html>

@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pi0、pi0.5整理</title>
+  <style>
+:root {
+  color-scheme: light;
+  --paper: #fffefa;
+  --canvas: #f3f0e9;
+  --ink: #182432;
+  --muted: #657282;
+  --line: #e1e5e7;
+  --accent: #6c55c4;
+  --accent-soft: #f0ecff;
+  --accent-ink: #4e3c9e;
+  --code-bg: #17202c;
+  --code-ink: #edf3f7;
+  --shadow: 0 16px 56px rgba(27, 42, 58, .08);
+}
+body[data-theme="teal"] {
+  --accent: #087e83;
+  --accent-soft: #e5f5f1;
+  --accent-ink: #086c71;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--canvas);
+  font-family: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+  font-size: 17px;
+  line-height: 1.88;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  inset: 0 0 auto;
+  height: 430px;
+  background: radial-gradient(circle at 14% 10%, var(--accent-soft), transparent 45%),
+              linear-gradient(120deg, #faf8f4, #e9edf0);
+}
+a { color: var(--accent-ink); text-decoration-color: #b8b2df; text-underline-offset: 3px; }
+a:hover { color: var(--accent); }
+.site-header {
+  max-width: 1430px;
+  margin: 0 auto;
+  padding: 64px 44px 34px;
+}
+.back-link { display: inline-block; margin-bottom: 24px; color: var(--muted); font-size: 14px; font-weight: 650; text-decoration: none; }
+.back-link:hover { color: var(--accent); }
+.title-rule {
+  display: block;
+  width: 52px;
+  height: 5px;
+  margin-bottom: 26px;
+  border-radius: 99px;
+  background: var(--accent);
+}
+.site-header h1 {
+  max-width: 1000px;
+  margin: 0;
+  font-size: clamp(38px, 4.2vw, 68px);
+  font-weight: 800;
+  line-height: 1.22;
+  letter-spacing: -.035em;
+  overflow-wrap: anywhere;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(210px, 260px) minmax(0, 1fr);
+  align-items: start;
+  gap: 34px;
+  max-width: 1430px;
+  margin: 0 auto 90px;
+  padding: 0 44px;
+}
+.toc {
+  position: sticky;
+  top: 22px;
+  max-height: calc(100vh - 44px);
+  overflow-y: auto;
+  padding: 22px 4px 22px 0;
+  scrollbar-width: thin;
+}
+.toc-title {
+  margin: 0 0 14px 14px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .18em;
+}
+.toc a {
+  display: block;
+  padding: 7px 12px 7px 14px;
+  border-left: 2px solid transparent;
+  border-radius: 0 8px 8px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.toc a:hover, .toc a.active {
+  border-left-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.toc a.level-3 { padding-left: 27px; font-size: 12px; }
+.toc a.level-4 { padding-left: 40px; font-size: 12px; }
+.mobile-toc { display: none; }
+.paper {
+  min-width: 0;
+  padding: 48px clamp(24px, 5vw, 76px) 76px;
+  border: 1px solid #e8e9e5;
+  border-radius: 22px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+.article { max-width: 900px; margin: 0 auto; overflow-x: clip; }
+.article > :first-child { margin-top: 0; }
+.article h1, .article h2, .article h3, .article h4 {
+  line-height: 1.38;
+  letter-spacing: -.018em;
+  scroll-margin-top: 30px;
+  overflow-wrap: anywhere;
+}
+.article h1 {
+  margin: 72px 0 23px;
+  padding-top: 26px;
+  border-top: 2px solid var(--ink);
+  font-size: clamp(28px, 3vw, 40px);
+}
+.article h2 {
+  margin: 66px 0 22px;
+  padding: 0 0 15px;
+  border-bottom: 1px solid var(--line);
+  font-size: clamp(25px, 2.6vw, 34px);
+  font-weight: 780;
+}
+.article h2::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: .8em;
+  margin-right: 13px;
+  border-radius: 5px;
+  background: var(--accent);
+  vertical-align: -.03em;
+}
+.article h3 {
+  margin: 44px 0 14px;
+  color: var(--accent-ink);
+  font-size: clamp(21px, 2vw, 26px);
+}
+.article h4 { margin: 30px 0 12px; font-size: 19px; }
+.article p { margin: 15px 0 23px; overflow-wrap: anywhere; }
+.article strong { font-weight: 760; color: #122334; }
+.article ul, .article ol { margin: 10px 0 25px; padding-left: 1.6em; }
+.article li { padding-left: .25em; margin: 7px 0; }
+.article li::marker { color: var(--accent); font-weight: 700; }
+.article li > p { margin: 5px 0; }
+.article blockquote {
+  margin: 30px 0;
+  padding: 15px 24px;
+  border-left: 5px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  background: var(--accent-soft);
+  color: #364250;
+}
+.article blockquote > :first-child { margin-top: 0; }
+.article blockquote > :last-child { margin-bottom: 0; }
+.article hr { margin: 42px 0; border: 0; border-top: 1px solid var(--line); }
+.article :not(pre) > code {
+  padding: .13em .34em;
+  border: 1px solid #e7e8ee;
+  border-radius: 5px;
+  background: #f4f5f8;
+  color: #a14254;
+  font-family: "Cascadia Code", Consolas, "Noto Sans Mono CJK SC", monospace;
+  font-size: .89em;
+  overflow-wrap: anywhere;
+}
+.article pre {
+  max-width: 100%;
+  margin: 24px 0 30px;
+  padding: 23px 26px;
+  overflow-x: auto;
+  border: 1px solid #283445;
+  border-radius: 14px;
+  background: var(--code-bg);
+  color: var(--code-ink);
+  box-shadow: 0 9px 25px rgba(20, 31, 45, .1);
+  font-family: "Cascadia Code", Consolas, "Noto Sans Mono CJK SC", monospace;
+  font-size: 13.5px;
+  line-height: 1.75;
+  tab-size: 4;
+}
+.article pre code { color: inherit; font: inherit; white-space: pre; }
+.article figure {
+  margin: 30px 0 36px;
+  padding: clamp(12px, 2vw, 22px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 30px rgba(30, 42, 58, .045);
+}
+.article figure a { display: block; line-height: 0; }
+.article figure img { display: block; width: auto; max-width: 100%; height: auto; margin: auto; }
+.table-wrap { max-width: 100%; margin: 28px 0 36px; overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+.article table { width: 100%; min-width: 620px; border-collapse: collapse; font-size: 15px; line-height: 1.7; }
+.article th, .article td { padding: 15px 17px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); text-align: left; vertical-align: top; }
+.article th:last-child, .article td:last-child { border-right: 0; }
+.article tr:last-child td { border-bottom: 0; }
+.article th { background: var(--accent-soft); color: var(--accent-ink); font-weight: 750; }
+.article tbody tr:nth-child(even) { background: #fafbf9; }
+@media (max-width: 980px) {
+  .site-header { padding: 38px 20px 25px; }
+  .layout { display: block; padding: 0 14px; }
+  .toc { display: none; }
+  .mobile-toc {
+    display: block;
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--paper);
+  }
+  .mobile-toc summary { color: var(--accent-ink); font-weight: 750; cursor: pointer; }
+  .mobile-toc nav { max-height: 45vh; overflow-y: auto; margin-top: 10px; }
+  .mobile-toc a { display: block; padding: 5px 2px; color: var(--muted); font-size: 14px; text-decoration: none; }
+  .mobile-toc a.level-3 { padding-left: 16px; }
+  .mobile-toc a.level-4 { padding-left: 32px; }
+  .paper { padding: 30px 22px 48px; border-radius: 14px; }
+}
+@media (max-width: 560px) {
+  body { font-size: 15.5px; }
+  .site-header h1 { font-size: 37px; }
+  .paper { padding: 27px 17px 45px; }
+  .article pre { padding: 18px; font-size: 12px; }
+  .article h2 { margin-top: 53px; }
+  .article figure { padding: 8px; }
+}
+@media print {
+  body { background: white; font-size: 12pt; }
+  body::before, .toc, .mobile-toc { display: none !important; }
+  .site-header { padding: 0 0 24px; }
+  .layout { display: block; margin: 0; padding: 0; }
+  .paper { padding: 0; border: 0; box-shadow: none; }
+  .article figure, .article pre, .article table { break-inside: avoid; }
+  .article h1, .article h2, .article h3, .article h4 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+</style>
+</head>
+<body data-theme="violet">
+  <header class="site-header">
+    <a class="back-link" href="/#study-record">← 返回 Study Record</a>
+    <span class="title-rule" aria-hidden="true"></span>
+    <h1>pi0、pi0.5整理</h1>
+  </header>
+  <div class="layout">
+    <aside class="toc" aria-label="目录">
+      <p class="toc-title">CONTENTS</p>
+      <nav><a class="level-2" href="#section-01">VLA的演化主线</a>
+<a class="level-2" href="#section-02">pi0.5的网络架构</a>
+<a class="level-3" href="#section-03">pi0</a>
+<a class="level-4" href="#section-04">训练过程</a>
+<a class="level-4" href="#section-05">推理过程</a>
+<a class="level-3" href="#section-06">pi0.5</a>
+<a class="level-4" href="#section-07">主要区别</a>
+<a class="level-4" href="#section-08">训练</a>
+<a class="level-4" href="#section-09">推理</a>
+<a class="level-2" href="#section-10">如何从0构建pi0 pi0.5网络结构</a>
+<a class="level-3" href="#section-11">一条训练样本究竟是什么</a>
+<a class="level-3" href="#section-12">原始轨迹首先被统一成相同格式</a>
+<a class="level-3" href="#section-13">action 和 proprio 归一化</a>
+<a class="level-3" href="#section-14">从轨迹构造动作 chunk</a>
+<a class="level-3" href="#section-15">图像、文字和状态进入模型前的处理</a>
+<a class="level-3" href="#section-16">Camera images → SigLIP patch embeddings</a>
+<a class="level-3" href="#section-17">给动作加噪，并加入 flow timestep</a>
+<a class="level-3" href="#section-18">三个 token block 怎样组成联合序列</a>
+<a class="level-3" href="#section-19">Block-wise attention mask 是架构的核心</a>
+<a class="level-3" href="#section-20">VLM和action expert分支究竟如何交互</a>
+<a class="level-3" href="#section-21">Action Expert 预测速度场</a>
+<a class="level-3" href="#section-22">推理时如何从噪声得到动作</a>
+<a class="level-3" href="#section-23">模型输出如何在仿真中变成机器人动作</a>
+<a class="level-3" href="#section-24">pi0.5的控制频率以及仿真执行</a>
+<a class="level-2" href="#section-25">图的对应关系</a></nav>
+    </aside>
+    <div>
+      <details class="mobile-toc"><summary>目录</summary><nav><a class="level-2" href="#section-01">VLA的演化主线</a>
+<a class="level-2" href="#section-02">pi0.5的网络架构</a>
+<a class="level-3" href="#section-03">pi0</a>
+<a class="level-4" href="#section-04">训练过程</a>
+<a class="level-4" href="#section-05">推理过程</a>
+<a class="level-3" href="#section-06">pi0.5</a>
+<a class="level-4" href="#section-07">主要区别</a>
+<a class="level-4" href="#section-08">训练</a>
+<a class="level-4" href="#section-09">推理</a>
+<a class="level-2" href="#section-10">如何从0构建pi0 pi0.5网络结构</a>
+<a class="level-3" href="#section-11">一条训练样本究竟是什么</a>
+<a class="level-3" href="#section-12">原始轨迹首先被统一成相同格式</a>
+<a class="level-3" href="#section-13">action 和 proprio 归一化</a>
+<a class="level-3" href="#section-14">从轨迹构造动作 chunk</a>
+<a class="level-3" href="#section-15">图像、文字和状态进入模型前的处理</a>
+<a class="level-3" href="#section-16">Camera images → SigLIP patch embeddings</a>
+<a class="level-3" href="#section-17">给动作加噪，并加入 flow timestep</a>
+<a class="level-3" href="#section-18">三个 token block 怎样组成联合序列</a>
+<a class="level-3" href="#section-19">Block-wise attention mask 是架构的核心</a>
+<a class="level-3" href="#section-20">VLM和action expert分支究竟如何交互</a>
+<a class="level-3" href="#section-21">Action Expert 预测速度场</a>
+<a class="level-3" href="#section-22">推理时如何从噪声得到动作</a>
+<a class="level-3" href="#section-23">模型输出如何在仿真中变成机器人动作</a>
+<a class="level-3" href="#section-24">pi0.5的控制频率以及仿真执行</a>
+<a class="level-2" href="#section-25">图的对应关系</a></nav></details>
+      <main class="paper"><article class="article">
+<h2 id="section-01">VLA的演化主线</h2>
+<p>个人认为ACT、Diffusion Policy等任务型策略向VLA发展的主要动机有两个：</p>
+<ol>
+<li>
+<p>引入预训练VLM所具备的视觉和语义先验，使策略不必完全依赖机器人数据从零学习物体、场景和任务概念，从而提升跨物体、跨场景和跨任务泛化能力。</p>
+</li>
+<li>
+<p>为多任务策略提供统一的任务定义入口。仅根据当前视觉状态，策略往往无法判断用户希望执行哪项任务；语言指令可以描述目标对象、操作方式和期望结果，从而消除任务歧义，并从多种可能行为中选择当前任务。</p>
+</li>
+</ol>
+<p>而相比OpenVLA等自回归的VLA模型将每个动作维度离散化为动作token，并自回归地逐个预测，duffusion、flow-matching等结构在连续动作表示、动作序列并行建模和多模态分布建模方面有明显优势，并且可以一次处理完整的action chunk。它们更适合表示高精度、平滑且可能具有多种合理解的机器人动作。</p>
+<p>也就是说在现在常见的VLM+flow-matching的架构中，我们希望VLM具有对场景、任务的泛化理解能力，为flow-matching阶段提供足够的信息如包含场景、对象、任务和机器人状态信息的上下文表征，子任务拆解等。希望action expert在实时性方面实现动作的连续生成。</p>
+<h2 id="section-02">pi0.5的网络架构</h2>
+<h3 id="section-03">pi0</h3>
+<figure><a href="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image%204.png" rel="noopener" target="_blank"><img alt="image.png" decoding="async" loading="eager" src="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image%204.png"/></a></figure>
+<p>多视角图像 ─→ SigLIP ───────────┐</p>
+<p>语言指令 ───→ Tokenizer ────────┤→ VLM PaliGemma Prefix</p>
+<p>│</p>
+<p>机器人状态 ─→ State Projection ─┤</p>
+<p>噪声动作 ───→ Action Projection ┤→ Action Expert Suffix</p>
+<p>Flow时间 ───→ Time Embedding ───┘</p>
+<p>↓</p>
+<p>Dual-Expert Transformer</p>
+<p>↓</p>
+<p>Flow Vector Field</p>
+<p>↓</p>
+<p>连续Action Chunk</p>
+<p>π0以已经完成视觉—语言对齐的PaliGemma作为基础，再加入机器人状态token、连续动作token、时间条件和action expert，使原本只能理解图像与语言的VLM具备连续动作生成能力。</p>
+<h4 id="section-04">训练过程</h4>
+<p>一条训练样本包含：</p>
+<pre><code class="language-Plain">图像 I
+语言指令 l
+机器人状态 q
+真实动作序列 a
+</code></pre>
+<p>真实动作序列为：</p>
+<p>a ∈ ℝ^(B×H×A)  例：batch_size 8 * action_size32 * chunk_size50</p>
+<p>每次训练重新采样高斯噪声和时间：</p>
+<p>ε ~ N(0, I)，t ~ Beta(1.5, 1)</p>
+<p>OpenPI 代码采用“t=1 是噪声、t=0 是真实动作”的约定：</p>
+<p>x_t = tε + (1 - t)a</p>
+<p>训练目标为：</p>
+<p>u_t = ε - a（速度场）</p>
+<p>此时送入网络的是中间状态 x_t，不是始终相同的纯噪声。</p>
+<p><strong>图像token</strong></p>
+<p>每个视角分别处理：</p>
+<pre><code class="language-Plain">224×224 RGB图像
+→ patch_size 14×14 每个patch大小为14*14像素
+→ 16×16=256个Patch
+→ SigLIP
+→ PaliGemma视觉投影
+→ 256个2048维视觉token
+</code></pre>
+<p><strong>文本token</strong></p>
+<p>PaliGemma Tokenizer</p>
+<p>VLM Prefix P=图像token+文本token = 256M+L(M是相机路数，L是文本token长度) PaliGemma长度是2048维</p>
+<p>Prefix内部使用双向注意力，因此所有有效图像和语言token可以相互读取。</p>
+<p><strong>动作token</strong></p>
+<p>Action_Expert A = Robot State + Action(经过时间步t拼接后的action) = 1+H     Action_expert长度是1024维</p>
+<p>网络中的逻辑序列为：</p>
+<pre><code class="language-Plain">[Image Tokens][Language Tokens][State Token][Action Tokens]
+└────── VLM Expert ──────┘ └──── Action Expert ────┘
+</code></pre>
+<p>注意力关系如下：</p>
+<ul>
+<li>整个noisy action chunk在当前flow step中是同时已知的，可以并行更新全部动作。</li>
+</ul>
+<p><strong>Dual-Expert Transformer内部计算</strong></p>
+<p>两套expert将token投影到兼容的attention空间：</p>
+<pre><code class="language-Plain">8个Attention Head
+每个Head维度256
+</code></pre>
+<p>随后将两部分的K/V按token维拼接，使action query能够读取VLM prefix：</p>
+<pre><code class="language-Plain">PaliGemma K/V ─┐
+               ├→ Masked Joint Attention → Action Hidden
+Action K/V ────┘
+</code></pre>
+<p>注意力结束后，再将结果按token位置拆开：</p>
+<ul>
+<li>
+<p>Prefix结果回到2048维，由VLM expert继续处理；</p>
+</li>
+<li>
+<p>Suffix结果回到1024维，由action expert继续处理。</p>
+</li>
+</ul>
+<p>这个过程重复18层。</p>
+<p><strong>输出与损失</strong></p>
+<p>取最后H个action位置的hidden states，</p>
+<p>经过输出投影：</p>
+<p>v_θ(x_t, o, t) = W_out Z_action ∈ ℝ^(B×H×A)</p>
+<p>它预测的不是最终动作，而是 flow vector field</p>
+<p>训练损失为：</p>
+<p>L = ‖ v_θ(x_t, o, t) - (ε - a) ‖²（预测的速度场和真实的速度场）</p>
+<p>梯度从 action 输出经过联合 attention 传递到 action expert，也能影响 PaliGemma 的机器人任务表征。</p>
+<h4 id="section-05">推理过程</h4>
+<p>按照当前观测构造VLM Prefix</p>
+<p>动作推理从纯高斯噪声开始</p>
+<p>用每一步的[robot state+action(time embedded)]的action token作为query</p>
+<p>得到速度场    v_t = v_θ(x_t, o, t)</p>
+<p>更新动作       x_(t+Δt) = x_t + Δt · v_t</p>
+<p>最终得到action chunk 输出机器人动作</p>
+<h3 id="section-06">pi0.5</h3>
+<figure><a href="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image.png" rel="noopener" target="_blank"><img alt="image.png" decoding="async" loading="eager" src="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image.png"/></a></figure>
+<p>π0.5的总体流程不变：</p>
+<pre><code class="language-Plain">Prefix提供环境和任务信息
+→ Action Expert读取Prefix
+→ Flow Matching生成Action Chunk
+</code></pre>
+<h4 id="section-07">主要区别</h4>
+<p>1.pi0.5中robot state也在VLM Prefix阶段： 归一化到[-1,1]→ 每个维度离散为256档→ 转换成数字字符串<br/>
+→ 与文本组成Prompt→ PaliGemma Tokenizer。因此π0.5的Prefix变为：[Image Tokens][Task + State Tokens]</p>
+<p>2.在预训练阶段用FAST 的action token，在后训练阶段用flow matching</p>
+<p>3.加入高层系统为底层系统分配子任务</p>
+<p>第一阶段：</p>
+<p>图像 + 总任务</p>
+<p>→ PaliGemma自回归生成子任务文本</p>
+<p>第二阶段：</p>
+<p>图像 + 生成的子任务文本 + 机器人状态</p>
+<p>→ 重新构造VLM Prefix</p>
+<p>→ Action Expert通过Attention读取Prefix</p>
+<p>→ Flow Matching生成动作</p>
+<h4 id="section-08">训练</h4>
+<p><strong>预训练</strong></p>
+<p>通过FAST tokenizer压缩成一串离散动作token：</p>
+<p>连续Action Chunk→ 频域压缩→ 量化→ FAST Tokenizer→ 离散Action Tokens</p>
+<p>训练序列可以概括为：</p>
+<pre><code class="language-Plain">输入：
+[图像Token][总任务Token][离散State Token]
+
+输出：
+[Bounding Box Token]
+[子任务文本Token]
+[FAST动作Token]
+</code></pre>
+<p><strong>后训练</strong></p>
+<pre><code class="language-Plain">Prefix:
+[Image Tokens][Task + Discrete State Tokens]
+Suffix:
+[Noisy Action Tokens]
+Condition:
+[Flow Timestep → AdaRMS]
+</code></pre>
+<p>一次联合forward后，只取action token输出计算flow-matching loss。</p>
+<h4 id="section-09">推理</h4>
+<pre><code class="language-Plain">图像 + Task + Discrete State
+→ 计算并缓存Prefix K/V
+随机Action Noise
+→ Action Tokens
+
+每个Flow Step：
+当前t → AdaRMS
+Action Tokens读取Prefix K/V
+→ 预测Vector Field
+→ Euler更新
+最终得到Action Chunk
+</code></pre>
+<p>11.10</p>
+<h2 id="section-10">如何从0构建pi0 pi0.5网络结构</h2>
+<p>参考项目：https://github.com/allenzren/open-pi-zero</p>
+<p>https://github.com/Physical-Intelligence/openpi</p>
+<h3 id="section-11">一条训练样本究竟是什么</h3>
+<p>在进入模型前，一条样本包含：</p>
+<p>其中：</p>
+<ul>
+<li>
+<p><code>1</code>：只使用当前一帧，没有历史。</p>
+</li>
+<li>
+<p><code>4</code>：当前动作加未来 3 步动作。</p>
+</li>
+<li>
+<p><code>7</code>：<code>Δx, Δy, Δz, Δroll, Δpitch, Δyaw, gripper</code>。</p>
+</li>
+</ul>
+<hr/>
+<h3 id="section-12">原始轨迹首先被统一成相同格式</h3>
+<p>入口是 <a href="https://github.com/allenzren/open-pi-zero/blob/main/src/data/dataset.py#L257">dataset.py（第 257 行）</a>。</p>
+<p>无论原始 RLDS 数据字段叫什么，最终都被整理成：</p>
+<pre><code class="language-Plain">observation:
+    image_primary
+    proprio
+    timestep
+task:
+    language_instruction
+action
+dataset_name
+</code></pre>
+<p>不同数据集先有各自的标准化函数：</p>
+<ul>
+<li>Bridge：<a href="https://github.com/allenzren/open-pi-zero/blob/main/src/data/oxe/oxe_standardization_transforms.py#L27">oxe_standardization_transforms.py（第 27 行）</a></li>
+</ul>
+<p>Bridge 有一个很重要的处理：前 6 维动作被重新定义为</p>
+<pre><code class="language-Plain">next_state[:6] - current_state[:6]
+</code></pre>
+<p>也就是说，模型学习的是相邻时刻的末端位姿增量，而不是使用原始控制命令。第七维夹爪始终当作连续值去学习最后化为0、1二值</p>
+<hr/>
+<h3 id="section-13">action 和 proprio 归一化</h3>
+<p>代码在 data_utils.py (line 250)。</p>
+<p>当前采用 BOUNDS，使用数据集的 1% 和 99% 分位数映射到 [-1,1]：</p>
+<p>x_norm = clip( 2·(x - p01)/(p99 - p01) - 1, -1, 1 )       确保数据归一到[-1,1]的范围中</p>
+<p>注意两个细节：</p>
+<ul>
+<li>
+<p>proprio 的所有维度都会归一化。</p>
+</li>
+<li>
+<p>action 最后一维 gripper 不归一化，仍然保持 0/1。</p>
+</li>
+</ul>
+<hr/>
+<h3 id="section-14">从轨迹构造动作 chunk</h3>
+<p>这是数据构造过程中最关键的一步，代码在 <a href="https://github.com/allenzren/open-pi-zero/blob/main/src/data/traj_transforms.py#L12">traj_transforms.py（第 12 行）</a>。</p>
+<p>对于轨迹：</p>
+<pre><code class="language-Plain">a0, a1, a2, a3, a4, ...
+</code></pre>
+<p>当 <code>action_horizon=4</code> 时，每个时刻对应：</p>
+<pre><code class="language-Plain">t=0 -&gt; [a0, a1, a2, a3]
+t=1 -&gt; [a1, a2, a3, a4]
+t=2 -&gt; [a2, a3, a4, a5]
+</code></pre>
+<p>随后再增加 observation history 轴，因此最终是：</p>
+<pre><code class="language-Plain">[traj_len, window_size, action_horizon, action_dim]
+</code></pre>
+<p>当前 <code>window_size=1</code>，所以单个 batch 中是 <code>[B,1,4,7]</code>。</p>
+<hr/>
+<h3 id="section-15">图像、文字和状态进入模型前的处理</h3>
+<p>训练入口在 <a href="https://github.com/allenzren/open-pi-zero/blob/main/src/agent/train.py#L272">train.py（第 272 行）</a>。</p>
+<p>这里完成：</p>
+<pre><code class="language-Plain">images = batch["observation"]["image_primary"]
+proprios = batch["observation"]["proprio"]
+actions = batch["action"].squeeze(1)
+texts = ...
+</code></pre>
+<p>图像从：</p>
+<pre><code class="language-Plain">[B, 1, H, W, 3]
+</code></pre>
+<p>变成：</p>
+<pre><code class="language-Plain">[B, 3, H, W]
+</code></pre>
+<p>然后交给 <code>VLAProcessor</code>做两件事。</p>
+<p>1.图像从 <code>[0,255]</code> 变换到 <code>[-1,1]</code>：</p>
+<pre><code class="language-Plain">image / 255
+(image - 0.5) / 0.5
+</code></pre>
+<p>2.在语言前加入 256 个 <code>&lt;image&gt;</code> 占位 token：</p>
+<pre><code class="language-Plain">&lt;image&gt; × 256 + &lt;bos&gt; + instruction + "\n" + padding
+</code></pre>
+<p>最终 <code>input_ids</code> 固定为 <code>[B,276]</code>。 20 个文本 token实际上还要包含 BOS(序列开始标志符) 和换行等 token。</p>
+<hr/>
+<h3 id="section-16">Camera images → SigLIP patch embeddings</h3>
+<p>图像配置为：</p>
+<pre><code class="language-Plain">224×224
+patch_size = 14
+</code></pre>
+<p>即得到 256 个 patch。</p>
+<p>具体 patch embedding 是一个：</p>
+<pre><code class="language-Plain">Conv2d(
+    in_channels=3,
+    out_channels=1152,
+    kernel_size=14,
+    stride=14
+)
+</code></pre>
+<p>完整形状变化：</p>
+<pre><code class="language-Plain">[B,3,224,224]
+        ↓ patch Conv
+[B,256,1152]
+        ↓ 27 层 SigLIP
+[B,256,1152]
+        ↓ projector
+[B,256,2048]
+</code></pre>
+<p>随后，256 个图像向量会替换 <code>input_ids</code> 中 256 个 <code>&lt;image&gt;</code> 占位符；真正的文字 token 使用 Gemma embedding。代码在所以图文分支最终是：</p>
+<pre><code class="language-Plain">[B,276,2048]
+</code></pre>
+<hr/>
+<h3 id="section-17">给动作加噪，并加入 flow timestep</h3>
+<p>令真实动作 chunk 为：</p>
+<p>x_1 ∈ ℝ^(B×4×7)</p>
+<p>先采样同形状高斯噪声：</p>
+<p>x_0 ~ N(0, I)</p>
+<p>然后构造时刻 t 的 noisy action：</p>
+<p>ψ_t(x_0, x_1) = [1 - (1 - σ_min)t] x_0 + t x_1</p>
+<p>当：</p>
+<ul>
+<li>
+<p>t = 0：完全是高斯噪声 x_0</p>
+</li>
+<li>
+<p>t = 1：约等于真实动作 x_1，还残留很小的 σ_min x_0（小的误差避免去噪中flow-matching方差为0）</p>
+</li>
+</ul>
+<p>时间 t 默认不是均匀采样，而是：</p>
+<pre><code class="language-Plain">z ~ Beta(1.5, 1)
+t = (1 - sigma_min) * (1 - z)
+</code></pre>
+<p>这会让训练更偏向较小的 <code>t</code>，也就是更嘈杂、更困难的区域。</p>
+<p>时间通过正弦编码变为向量</p>
+<hr/>
+<h3 id="section-18">三个 token block 怎样组成联合序列</h3>
+<p>完整逻辑序列是：</p>
+<pre><code class="language-Plain">[ image + text 固定 276 个槽位 ]
+[ proprio 1 token ]
+[ action 4 tokens ]
+</code></pre>
+<p>总长度：</p>
+<p>\[ 276+1+4=281 \]</p>
+<p>但它们不是直接送进一个普通 Gemma。三个分支保留各自的参数：</p>
+<pre><code class="language-Plain">VLM expert:
+    hidden=2048, intermediate=16384
+
+Proprio/Action expert:
+    hidden=1024, intermediate=4096
+</code></pre>
+<p>action expert 是 18 层、1024 hidden 的约 300M Gemma 变体</p>
+<p>完整过程是：</p>
+<pre><code class="language-Plain">noisy action + 时间 t
+        ↓ ActionEncoder
+action token embedding
+        ↓ 18层缩小版 Gemma Transformer
+action hidden states
+        ↓ ActionDecoder
+预测速度 vθ
+        ↓ Flow matching loss
+与真实速度比较
+</code></pre>
+<hr/>
+<h3 id="section-19">Block-wise attention mask 是架构的核心</h3>
+<p>mask的可见性为：</p>
+<figure><a href="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image%205.png" rel="noopener" target="_blank"><img alt="image.png" decoding="async" loading="eager" src="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image%205.png"/></a></figure>
+<p>因此：</p>
+<ol>
+<li>
+<p>图文不会被状态和动作反向污染。</p>
+</li>
+<li>
+<p>状态可以结合视觉和语言形成条件表示。</p>
+</li>
+<li>
+<p>动作可以读取所有条件。</p>
+</li>
+<li>
+<p>4 个 action token 可以互相注意，因此整段动作是联合生成的，而不是逐动作生成。</p>
+</li>
+</ol>
+<p>位置编号也分块：</p>
+<pre><code class="language-Plain">VLM:       1 ... 276
+proprio:   1
+action:    2, 3, 4, 5
+</code></pre>
+<p>proprio 与 action 共享 expert，因此状态位置为 1、动作从 2 开始，使它们在共享 RoPE 坐标系中形成连续序列。</p>
+<hr/>
+<h3 id="section-20">VLM和action expert分支究竟如何交互</h3>
+<figure><a href="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image%203.png" rel="noopener" target="_blank"><img alt="image.png" decoding="async" loading="eager" src="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image%203.png"/></a></figure>
+<p>每一层中：</p>
+<pre><code class="language-Plain">VLM hidden       → VLM 自己的 Q/K/V 投影
+Proprio hidden   → action expert 的 Q/K/V 投影
+Action hidden    → action expert 的 Q/K/V 投影
+</code></pre>
+<p>虽然 VLM hidden 是 2048、action hidden 是 1024，但二者都被投影成相同的 attention head 结构：</p>
+<pre><code class="language-Plain">Q: 8 heads × 256
+K/V: 1 head × 256
+</code></pre>
+<p>因此可以沿 token 维拼接：</p>
+<pre><code class="language-Plain">query_states = torch.cat(...)
+key_states   = torch.cat(...)
+value_states = torch.cat(...)
+</code></pre>
+<p>然后只进行一次全局 attention：</p>
+<p>softmax( QKᵀ / √256 + mask ) V</p>
+<p>输出再按 token 长度拆回：</p>
+<pre><code class="language-Plain">VLM output
+proprio output
+action output
+</code></pre>
+<p>然后各自经过自己的 <code>o_proj</code>、残差、RMSNorm 和 MLP。</p>
+<p>所以这里不是带 router 的传统稀疏 MoE。更准确地说是：</p>
+<blockquote>
+<p>参数独立的多个 Transformer expert，在每层 attention 中交换信息</p>
+</blockquote>
+<hr/>
+<h3 id="section-21">Action Expert 预测速度场</h3>
+<p>action expert 最终输出：</p>
+<pre><code class="language-Plain">[B,4,1024]
+</code></pre>
+<p>经过线性 decoder：</p>
+<pre><code class="language-Plain">v_psi = self.action_decoder(action_embeds)
+</code></pre>
+<p>得到：</p>
+<pre><code class="language-Plain">[B,4,7]
+</code></pre>
+<p>它表示 flow velocity。</p>
+<p>真实目标速度是插值路径对时间的导数：</p>
+<p>dψ_t/dt = x_1 - (1 - σ_min) x_0</p>
+<p>训练损失为：</p>
+<p>L = E[ ‖ v_θ(ψ_t, t, condition) - (x_1 - (1 - σ_min)x_0) ‖₂² ]</p>
+<p>这里没有 action token 的交叉熵，也没有动作离散化；这是纯连续 flow matching。</p>
+<hr/>
+<h3 id="section-22">推理时如何从噪声得到动作</h3>
+<p>首先，图像、文字、状态只计算一次：</p>
+<pre><code class="language-Plain">VLM + proprio forward
+→ 保存每一层的 K/V cache
+</code></pre>
+<p>然后初始化动作：</p>
+<pre><code class="language-Plain">action = torch.randn(B, 4, 7)
+t = 0
+dt = 1 / 10
+</code></pre>
+<p>接着进行 10 次 Euler 积分：</p>
+<pre><code class="language-Plain">for _ in range(10):
+    velocity = model(action, t, cached_condition)
+    action = action + 0.1 * velocity
+    t = t + 0.1
+</code></pre>
+<p>即：</p>
+<p>a_(k+1) = a_k + Δt · v_θ(a_k, t_k | condition)</p>
+<p>注意这 10 次循环只运行 action expert；PaliGemma 的 K/V 被缓存，不会重复运行。这正是图中“multimodal prefix tokens → K/V”的实际含义。</p>
+<p>最后动作被 clip 到 [-1,1]。</p>
+<hr/>
+<h3 id="section-23">模型输出如何在仿真中变成机器人动作</h3>
+<p>先对action expert输出进行反归一化 得到最终7D pose</p>
+<p>处理顺序是：</p>
+<pre><code class="language-Plain">预测动作 [4,7]
+    ↓ 前 6 维按 p01/p99 反归一化
+位移增量 + 欧拉角增量 + gripper
+    ↓ 欧拉角转 axis-angle
+SimplerEnv 需要的 7 维控制命令
+</code></pre>
+<p>gripper 没有反归一化，因为训练时它原本就保留为 <code>0/1</code>，随后再根据 Bridge/Fractal 的约定转为环境中的开合命令。</p>
+<p><strong>第一步：末端增量转目标位姿。</strong> 仿真环境首先根据当前末端位姿（EE Pose），将预测的位移与旋转增量转换成绝对目标位姿。其中平移需要考虑参考坐标系，旋转需要通过旋转矩阵或四元数进行组合。</p>
+<p><strong>第二步：目标末端位姿转关节目标。</strong> 通过逆运动学（IK）求解满足目标末端位姿的关节角度：</p>
+<p>q_target = IK(T_target, q_current)</p>
+<p>在 RoboTwin 的 EE 控制模式中，cuRobo 进一步结合碰撞约束和运动规划，生成连续的目标关节位置、速度轨迹 q_d(t), q̇_d(t)。</p>
+<p><strong>第三步：目标关节位置转驱动力矩。</strong> SAPIEN Joint Drive 接收目标关节位置和速度，根据 PD 控制规律产生驱动作用：</p>
+<p>τ_PD = K_p(q_d - q) + K_d(q̇_d - q̇)</p>
+<p>其中 q_d, q 分别为目标和实际关节位置，K_p, K_d 为位置刚度与速度阻尼。RoboTwin 还通过 <code>compute_passive_force()</code> 计算重力及科里奥利、离心效应补偿。</p>
+<p><strong>第四步：物理仿真执行。</strong> PhysX 根据关节驱动作用、刚体动力学、关节约束及物体接触和摩擦，计算机械臂实际运动，更新 qpos、qvel 和末端位姿。</p>
+<p>因此，<strong>π₀.₅ 输出的是运动目标，而非关节力矩；IK / cuRobo 负责将末端目标转换为关节目标，SAPIEN Joint Drive 负责关节驱动，PhysX 负责动力学与碰撞仿真。</strong></p>
+<p>在多步动作执行过程中，仿真器依次执行 Action Chunk 中的动作，并按照部署策略重新获取观测、调用 VLA 推理，形成闭环控制。</p>
+<h3 id="section-24">pi0.5的控制频率以及仿真执行</h3>
+<p>π₀.₅ 通过 Action Chunking 实现低频视觉推理和高频动作控制。模型通常一次预测未来 50 步动作，Flow Matching 采用 10 次积分，完成后将整个动作序列交给仿真环境执行。</p>
+<p>在 RoboTwin 原生配置中，SAPIEN 物理仿真步长为 0.004s，对应 250Hz；默认每 15 个物理步采集一次示教数据，数据频率约为 16.67Hz。采用 <code>pi0_step=50</code> 的完整动作块执行方式时，每次推理生成的 50 步动作覆盖约 3 秒仿真时间，随后重新获取相机图像和机器人状态进行下一轮推理，因此按仿真时间计算的视觉策略为3s接收一次image更新。</p>
+<p>在使用 50Hz 控制的 RoboTwin2.0 论文实验中，同样的 50 步 Action Chunk 则覆盖 1 秒。如果执行完整 50 步，视觉策略更新频率为 1Hz；若只执行前 25 步，则更新频率为 2Hz。</p>
+<p>从实际计算耗时来看，已有 RoboTwin2.0 实验报告 π₀.₅ 单次完整推理约为 101–121ms。这意味着 VLM 和 Action Expert 生成动作块所需的时间远短于完整动作块对应的执行时间。在常规同步仿真中，模型生成动作期间环境暂停推进，推理结束后再执行动作；而实际机器人部署可采用异步推理或 RTC，使下一次推理与旧动作块的执行重叠，从而避免控制停顿。</p>
+<p>仿真中的执行过程参考文档VLA与RoboTwin仿真</p>
+<h2 id="section-25">图的对应关系</h2>
+<figure><a href="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image%201.png" rel="noopener" target="_blank"><img alt="image.png" decoding="async" loading="eager" src="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image%201.png"/></a></figure>
+<figure><a href="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image%202.png" rel="noopener" target="_blank"><img alt="image.png" decoding="async" loading="eager" src="%E5%9B%BE%E7%89%87%E5%92%8C%E9%99%84%E4%BB%B6/image%202.png"/></a></figure>
+</article></main>
+    </div>
+  </div>
+  <script>
+const links = [...document.querySelectorAll('.toc a')];
+const byId = new Map(links.map(a => [a.hash.slice(1), a]));
+const observer = new IntersectionObserver(entries => {
+  for (const entry of entries) {
+    if (!entry.isIntersecting) continue;
+    links.forEach(a => a.classList.remove('active'));
+    byId.get(entry.target.id)?.classList.add('active');
+  }
+}, { rootMargin: '-10% 0px -72% 0px' });
+document.querySelectorAll('.article h1[id], .article h2[id], .article h3[id], .article h4[id]').forEach(h => observer.observe(h));
+document.querySelectorAll('.mobile-toc a').forEach(a => a.addEventListener('click', () => {
+  document.querySelector('.mobile-toc').open = false;
+}));
+</script>
+</body>
+</html>

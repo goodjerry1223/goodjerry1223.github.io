@@ -27,9 +27,12 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; border-
 .eyebrow-line { width: 24px; height: 2px; background: var(--accent); }
 h1, h2, h3, p { margin-top: 0; }
 h1 { margin-bottom: 22px; font-size: clamp(48px, 6vw, 76px); line-height: 1.17; letter-spacing: -.06em; }
-h1 span { display: block; margin-top: 12px; color: #8290a4; font-size: clamp(25px, 3vw, 37px); font-weight: 550; letter-spacing: -.045em; }
-.lead { max-width: 650px; margin-bottom: 18px; font-size: clamp(19px, 2vw, 24px); font-weight: 650; line-height: 1.55; }
-.intro-detail { max-width: 650px; margin-bottom: 33px; color: var(--muted); font-size: 15px; line-height: 1.95; }
+.education { max-width: 580px; margin: 28px 0 32px; }
+.education-label { margin: 0 0 8px; color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: .16em; }
+.education-item { display: grid; grid-template-columns: minmax(125px, 1fr) 100px 110px; align-items: center; gap: 14px; border-top: 1px solid var(--line); padding: 12px 0; font-size: 14px; }
+.degree { font-weight: 700; }
+.school { color: var(--muted); }
+.dates { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
 .intro-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; font-size: 14px; font-weight: 700; }
 .primary-link { display: inline-flex; align-items: center; gap: 22px; padding: 13px 20px; background: var(--accent); color: #fff; border-radius: 7px; box-shadow: 0 9px 20px rgba(86,68,175,.15); }
 .primary-link:hover { background: #44338e; }
@@ -71,6 +74,7 @@ h2 { margin-bottom: 0; font-size: clamp(30px, 3.5vw, 43px); line-height: 1.25; l
   .top-nav { gap: 15px; font-size: 12px; }
   .top-nav a:first-child { display: none; }
   .intro { grid-template-columns: 1fr; gap: 42px; padding: 70px 0 75px; }
+  .education-item { grid-template-columns: minmax(120px, 1fr) 75px 100px; }
   .focus-panel { max-width: 540px; }
   .records { padding: 60px 0 75px; }
   .section-heading, .contact { align-items: start; flex-direction: column; }
